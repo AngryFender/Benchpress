@@ -30,23 +30,21 @@ public:
             throw std::runtime_error("Failed to Connection to database,"+ std::string(PQerrorMessage(_pgconn.get())));
         }
 
-        /* Set always-secure search path, so malicious users can't take control. */
-        // Result res = PQexec(&_pgconn.get(),
-        //              "SELECT pg_catalog.set_config('search_path', '', false)");
-        // if (PQresultStatus(res) != PGRES_TUPLES_OK)
-        // {
-        //     fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
-        //     PQclear(res);
-        //     exit_nicely(conn);
-        // }
+        // Set always-secure search path, so malicious users can't take control
+        Result res = Result(PQexec(_pgconn.get(),"SELECT pg_catalog.set_config('search_path', '', false)"));
+        if (PGRES_TUPLES_OK != PQresultStatus(res.get()))
+        {
+            throw std::runtime_error("Failed to secure search path ,"+ std::string(PQerrorMessage(_pgconn.get())));
+        }
 
-        /*
-         * Should PQclear PGresult whenever it is no longer needed to avoid memory
-         * leaks
-         */
-        // PQclear(res);
-
+        // Set non-blocking mode
+        if (0 != PQsetnonblocking(_pgconn.get(), 1)) {
+            throw std::runtime_error("Failed to set non-blocking ,"+ std::string(PQerrorMessage(_pgconn.get())));
+        }
     }
+
+    void SimpleTransaction(const std::string& statement);
+    void repeatTransaction(const std::string& statement, const int repeat);
 
 private:
     Connection _pgconn;
