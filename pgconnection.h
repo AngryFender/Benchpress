@@ -6,7 +6,7 @@
 #include "libpq-fe.h"
 
 template <typename T, void (*func)(T*)>
-struct PGdelelter
+struct PGdeleter
 {
     void operator()(T* conn)
     {
@@ -17,8 +17,8 @@ struct PGdelelter
     }
 };
 
-using Connection = std::unique_ptr<PGconn, PGdelelter<PGconn, PQfinish>>;
-using Result = std::unique_ptr<PGresult, PGdelelter<PGresult, PQclear>>;
+using Connection = std::unique_ptr<PGconn, PGdeleter<PGconn, PQfinish>>;
+using Result = std::unique_ptr<PGresult, PGdeleter<PGresult, PQclear>>;
 
 class PGconnection
 {
@@ -43,7 +43,25 @@ public:
         }
     }
 
-    void SimpleTransaction(const std::string& statement);
+    PGconnection(const PGconnection&& connection) noexcept
+    {
+        if(this != &connection)
+        {
+            this->_pgconn = std::move(_pgconn);
+        }
+    }
+    PGconnection(const PGconnection& connection) = delete;
+    PGconnection& operator=(const PGconnection&) = delete;
+    PGconnection& operator=(const PGconnection&& connection)
+    {
+        if(this != &connection)
+        {
+            this->_pgconn = std::move(_pgconn);
+        }
+        return *this;
+    };
+
+    void simpleTransaction(const std::string& statement);
     void repeatTransaction(const std::string& statement, const int repeat);
 
 private:

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-void PGconnection::SimpleTransaction(const std::string& statement)
+void PGconnection::simpleTransaction(const std::string& statement)
 {
     // Start a transaction block
     // {
