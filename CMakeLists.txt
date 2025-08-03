@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 project(Benchpress)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 MESSAGE(STATUS "Using toolchain file ➜ ${CMAKE_TOOLCHAIN_FILE}")
 
 find_package(PostgreSQL REQUIRED)
@@ -21,3 +22,4 @@ target_link_libraries(Benchpress
         libpqxx::pqxx
         PostgreSQL::PostgreSQL
 )
+

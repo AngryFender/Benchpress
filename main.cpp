@@ -9,8 +9,8 @@
 int main(int argc, char* argv[])
 {
     std::cout << "Starting Benchpress\n";
-    const int max_transaction = 1000;
-    const int max_thread = 16;
+    const int max_transaction = 10000;
+    const int max_thread = 10;
 
     std::vector<std::thread> thread_store(max_thread);
     thread_store.reserve(max_thread);
@@ -33,16 +33,16 @@ int main(int argc, char* argv[])
     for (int j = 0; j < max_thread; ++j)
     {
         const int thread_no = j;
-        std::cout<<"thread = "<<std::to_string(thread_no)<<"\n";
-
-        thread_store.emplace_back([&connection_store,&connection_collection, thread_no]()
+        thread_store.emplace_back([&connection_store,&connection_collection, thread_no, max_transaction]()
         {
             for(int i = 0; i < max_transaction; ++i)
             {
-                connection_store[thread_no].simpleTransaction("SELECT 1;");
-                // pqxx::work txn(connection_collection[thread_no]);
-                // txn.exec("SELECT 1;");
-                // txn.commit();
+                connection_store[thread_no].simpleWriteTransaction("INSERT INTO public.test values (DEFAULT, 'abc')");
+//                connection_store[thread_no].simpleReadTransaction("SELECT 1;");
+//                pqxx::work txn(connection_collection[thread_no]);
+//                 txn.exec("INSERT INTO public.test values (DEFAULT, 'abc')");
+//                 txn.exec("SELECT 1;");
+//                 txn.commit();
             }
         });
     }

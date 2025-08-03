@@ -61,7 +61,8 @@ public:
         return *this;
     };
 
-    void simpleTransaction(const std::string& statement);
+    void simpleWriteTransaction(const std::string& statement);
+    void simpleReadTransaction(const std::string& statement);
     void repeatTransaction(const std::string& statement, const int repeat);
 
 private:
