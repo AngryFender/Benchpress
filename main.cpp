@@ -9,8 +9,8 @@
 int main(int argc, char* argv[])
 {
     std::cout << "Starting Benchpress\n";
-    const int max_transaction = 10000;
-    const int max_thread = 10;
+    const int max_transaction = 1;
+    const int max_thread = 1;
 
     std::vector<std::thread> thread_store(max_thread);
     thread_store.reserve(max_thread);
@@ -19,14 +19,14 @@ int main(int argc, char* argv[])
     connection_store.reserve(max_thread);
     for (int j = 0; j < max_thread; ++j)
     {
-        connection_store.emplace_back("host=localhost port=5432 dbname=pgbench user=pguser password=pgpass");
+        connection_store.emplace_back("host=localhost port=5432 dbname=postgres user=postgres password=postgres");
     }
 
     std::vector<pqxx::connection> connection_collection;
     connection_collection.reserve(max_thread);
     for (int j = 0; j < max_thread; ++j)
     {
-        connection_collection.emplace_back("host=localhost port=5432 dbname=pgbench user=pguser password=pgpass");
+        connection_collection.emplace_back("host=localhost port=5432 dbname=postgres user=postgres password=postgres");
     }
 
     auto start_time = std::chrono::steady_clock::now();
@@ -37,8 +37,10 @@ int main(int argc, char* argv[])
         {
             for(int i = 0; i < max_transaction; ++i)
             {
-                connection_store[thread_no].simpleWriteTransaction("INSERT INTO public.test values (DEFAULT, 'abc')");
-//                connection_store[thread_no].simpleReadTransaction("SELECT 1;");
+                // connection_store[thread_no].simpleWriteTransaction("INSERT INTO public.test values (DEFAULT, 'abc')");
+                // connection_store[thread_no].simpleReadTransaction("SELECT COUNT(*) FROM public.test;");
+                // connection_store[thread_no].repeatTransaction("SELECT COUNT(*) FROM public.test;", 2);
+                connection_store[thread_no].repeatTransaction("SELECT NOW()", 2);
 //                pqxx::work txn(connection_collection[thread_no]);
 //                 txn.exec("INSERT INTO public.test values (DEFAULT, 'abc')");
 //                 txn.exec("SELECT 1;");
