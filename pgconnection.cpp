@@ -76,6 +76,26 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
             throw std::runtime_error("Pipeline sync failed: " + std::string(PQerrorMessage(_pgconn.get())));
         }
 
+        // After PQpipelineSync()
+        while (true)
+        {
+            if (PQconsumeInput(_pgconn.get()) == 0)
+            {
+                throw std::runtime_error("PQconsumeInput failed: " + std::string(PQerrorMessage(_pgconn.get())));
+            }
+
+            if (!PQisBusy(_pgconn.get()))
+            {
+                // Not busy means we have results to fetch
+                break;
+            }
+            // In real code: wait on the socket fd with select()/poll() until readable
+            // then call PQconsumeInput() again
+        }
+
+
+        std::cout << "status of the pipeline " << PQpipelineStatus(_pgconn.get()) << "\n";
+
         static int id = 1;
 
         Result result;
