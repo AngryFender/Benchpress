@@ -55,20 +55,13 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
             throw std::runtime_error("Pipeline enter mode failed: " + std::string(PQerrorMessage(_pgconn.get())));
         }
 
-        // start sending queries
-        if(!PQsendQueryParams(_pgconn.get(), statement.c_str(),0, nullptr, nullptr, nullptr, nullptr, 0))
+        // start sending multiple queries
+        for(int i = 0; i < repeat; ++i)
         {
-            throw std::runtime_error("Pipeline query failed:"+ std::string(PQerrorMessage(_pgconn.get())));
-        }
-
-        if(!PQsendQueryParams(_pgconn.get(), statement.c_str(),0, nullptr, nullptr, nullptr, nullptr, 0))
-        {
-            throw std::runtime_error("Pipeline query failed:"+ std::string(PQerrorMessage(_pgconn.get())));
-        }
-
-        if(!PQsendQueryParams(_pgconn.get(), statement.c_str(),0, nullptr, nullptr, nullptr, nullptr, 0))
-        {
-            throw std::runtime_error("Pipeline query failed:"+ std::string(PQerrorMessage(_pgconn.get())));
+            if (!PQsendQueryParams(_pgconn.get(), statement.c_str(), 0, nullptr, nullptr, nullptr, nullptr, 0))
+            {
+                throw std::runtime_error("Pipeline query failed:" + std::string(PQerrorMessage(_pgconn.get())));
+            }
         }
 
         // flush queries to server
@@ -76,32 +69,14 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
             throw std::runtime_error("Pipeline sync failed: " + std::string(PQerrorMessage(_pgconn.get())));
         }
 
-        // After PQpipelineSync()
-        while (true)
-        {
-            if (PQconsumeInput(_pgconn.get()) == 0)
-            {
-                throw std::runtime_error("PQconsumeInput failed: " + std::string(PQerrorMessage(_pgconn.get())));
-            }
-
-            if (!PQisBusy(_pgconn.get()))
-            {
-                // Not busy means we have results to fetch
-                break;
-            }
-            // In real code: wait on the socket fd with select()/poll() until readable
-            // then call PQconsumeInput() again
-        }
-
-
         std::cout << "status of the pipeline " << PQpipelineStatus(_pgconn.get()) << "\n";
 
         static int id = 1;
-
         Result result;
         while((result = std::move(Result(PQgetResult(_pgconn.get())))))
         {
             std::cout<<"id: "<<id++<<"\n";
+
             ExecStatusType status = PQresultStatus(result.get());
             if(PGRES_TUPLES_OK == status)
             {
@@ -124,6 +99,7 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
             {
                 throw std::runtime_error("Error reading back result: " + std::string(PQerrorMessage(_pgconn.get())));
             }
+            Result result1 = std::move(Result(PQgetResult(_pgconn.get())));
         }
     }
     catch (std::exception& e)
