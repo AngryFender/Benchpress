@@ -69,18 +69,19 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
             throw std::runtime_error("Pipeline sync failed: " + std::string(PQerrorMessage(_pgconn.get())));
         }
 
-        std::cout << "status of the pipeline " << PQpipelineStatus(_pgconn.get()) << "\n";
-
         static int id = 1;
         Result result;
-        while((result = std::move(Result(PQgetResult(_pgconn.get())))))
+        while ( auto status = getStatus(result, _pgconn.get()) != PGRES_PIPELINE_SYNC)
         {
-            std::cout<<"id: "<<id++<<"\n";
+            if(result.get() == nullptr)
+            {
+                continue;
+            }
 
-            ExecStatusType status = PQresultStatus(result.get());
+            std::cout<<"id: "<<id++<<"\n";
             if(PGRES_TUPLES_OK == status)
             {
-                int nrows = PQntuples(result.get());
+                /*int nrows = PQntuples(result.get());
                 int nfields = PQnfields(result.get());
 
                 for(int i = 0; i < nrows; ++i)
@@ -90,16 +91,15 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
                         std::cout<<PQgetvalue(result.get(),i, j)<<",";
                     }
                     std::cout<<"\n";
-                }
+                }*/
             }
             else if(PGRES_COMMAND_OK == status)
             {
-                std::cout<<"Command succesfully excuted\n";
+                //std::cout<<"Command succesfully excuted\n";
             }else
             {
                 throw std::runtime_error("Error reading back result: " + std::string(PQerrorMessage(_pgconn.get())));
             }
-            Result result1 = std::move(Result(PQgetResult(_pgconn.get())));
         }
     }
     catch (std::exception& e)
@@ -107,4 +107,10 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
         std::cout<<e.what()<<"\n";
     }
     PQexitPipelineMode(_pgconn.get());
+}
+
+ExecStatusType PGconnection::getStatus(Result& result, PGconn* conn)
+{
+    result = Result(PQgetResult(conn));
+    return PQresultStatus(result.get());
 }
