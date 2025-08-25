@@ -67,7 +67,7 @@ public:
 
 private:
     Connection _pgconn;
-    inline static ExecStatusType getStatus(Result& result, PGconn* conn);
+    inline static ExecStatusType getStatus(Result& result, PGconn* conn, ExecStatusType& status);
 };
 
 
