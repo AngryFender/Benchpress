@@ -77,30 +77,31 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
             {
                 continue;
             }
-
-
-            // std::cout<<"id: "<<id++<<"\n";
-            if (PGRES_TUPLES_OK == status)
+            switch (status)
             {
-                int nrows = PQntuples(result.get());
-                int nfields = PQnfields(result.get());
+             case PGRES_TUPLES_OK: {
+                    int nrows = PQntuples(result.get());
+                    int nfields = PQnfields(result.get());
 
-                for (int i = 0; i < nrows; ++i)
-                {
-                    for (int j = 0; j < nfields; ++j)
+                    for (int i = 0; i < nrows; ++i)
                     {
-                        std::cout << PQgetvalue(result.get(), i, j) << ",";
+                        for (int j = 0; j < nfields; ++j)
+                        {
+                            std::cout << PQgetvalue(result.get(), i, j) << ",";
+                        }
+                        std::cout << "\n";
                     }
-                    std::cout << "\n";
-                }
+                    break;
             }
-            else if (PGRES_COMMAND_OK == status)
-            {
-                std::cout << "Command succesfully excuted\n";
-            }
-            else
-            {
-                throw std::runtime_error("Error reading back result: " + std::string(PQerrorMessage(_pgconn.get())));
+
+            case PGRES_COMMAND_OK:
+                std::cout << "Command successfully executed\n";
+                break;
+
+            default:
+                throw std::runtime_error(
+                    "Error reading back result: " + std::string(PQerrorMessage(_pgconn.get()))
+                );
             }
         }
     }
