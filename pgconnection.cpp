@@ -1,6 +1,6 @@
 #include "pgconnection.h"
 #include "libpq-fe.h"
-
+#include <arpa/inet.h>
 #include <iostream>
 #include <vector>
 
@@ -110,6 +110,43 @@ void PGconnection::repeatTransaction(const std::string& statement, const int rep
         std::cout<<e.what()<<"\n";
     }
     PQexitPipelineMode(_pgconn.get());
+}
+
+void PGconnection::singleTransaction(const std::string& statement)
+{
+    int32_t one = htonl(1);
+    int32_t two = htonl(2);
+    int32_t three = htonl(3);
+    int32_t four = htonl(4);
+
+    const char* param_values[4];
+    int param_lengths[4];
+    int param_formats[4];
+
+    param_values[0] = (char*)&one;
+    param_values[1] = (char*)&two;
+    param_values[2] = (char*)&three;
+    param_values[3] = (char*)&four;
+
+    for(int i = 0; i < 4; ++i)
+    {
+        param_lengths[i] = sizeof(int32_t);
+        param_formats[i] = 1;
+    }
+
+    auto result = Result(PQexecParams(_pgconn.get(),
+        "SELECT my_function($1,$2,$3,$4);",
+        4,
+        nullptr,
+        param_values,
+        param_lengths,
+        param_formats,
+        1));
+
+    if(PGRES_TUPLES_OK != PQresultStatus(result.get()))
+    {
+        std::cout<<"single transaction failed\n";
+    }
 }
 
 ExecStatusType PGconnection::getStatus(Result& result, PGconn* conn, ExecStatusType& status)
