@@ -11,6 +11,7 @@ int main(int argc, char* argv[])
     std::cout << "Starting Benchpress\n";
     const int max_transaction = 1;
     const int max_thread = 1;
+    const int pipeline_no = 1;
 
     std::vector<std::thread> thread_store(max_thread);
     thread_store.reserve(max_thread);
@@ -40,7 +41,8 @@ int main(int argc, char* argv[])
                 // connection_store[thread_no].simpleWriteTransaction("INSERT INTO public.test values (DEFAULT, 'abc')");
                 // connection_store[thread_no].simpleReadTransaction("SELECT COUNT(*) FROM public.test;");
                 // connection_store[thread_no].repeatTransaction("SELECT COUNT(*) FROM public.test;", 2);
-                connection_store[thread_no].repeatTransaction("SELECT NOW()", 2);
+                // connection_store[thread_no].repeatTransaction("SELECT NOW()", pipeline_no);
+                connection_store[thread_no].singleTransaction();
 //                pqxx::work txn(connection_collection[thread_no]);
 //                 txn.exec("INSERT INTO public.test values (DEFAULT, 'abc')");
 //                 txn.exec("SELECT 1;");
@@ -60,9 +62,9 @@ int main(int argc, char* argv[])
     auto end_time = std::chrono::steady_clock::now();
     auto time_diff = std::chrono::duration_cast<std::chrono::milliseconds>(end_time-start_time);
 
-    std::cout << "Transaction = " << max_transaction * max_thread << "\n"
+    std::cout << "Transaction = " << max_transaction * max_thread * pipeline_no<< "\n"
           << " Time taken = " << (double)time_diff.count() / (double)1000 <<"\n"
-          << " TPS = " << (double) max_transaction * max_thread* 1000 / (double) time_diff.count() << "\n";
+          << " TPS = " << (double) max_transaction * max_thread * pipeline_no * 1000 / (double) time_diff.count() << "\n";
     return 0;
 }
 

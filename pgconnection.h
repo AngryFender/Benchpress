@@ -64,7 +64,7 @@ public:
     void simpleWriteTransaction(const std::string& statement);
     void simpleReadTransaction(const std::string& statement);
     void repeatTransaction(const std::string& statement, const int repeat);
-    void singleTransaction(const std::string& statement);
+    void singleTransaction();
 
 private:
     Connection _pgconn;

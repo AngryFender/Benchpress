@@ -1,5 +1,6 @@
 #ifndef UTILITY_H
 #define UTILITY_H
+#include <atomic>
 #include <chrono>
 #include <iomanip>
 #include <sstream>
