@@ -175,6 +175,63 @@ void PGconnection::singleTransaction()
     }
 }
 
+void PGconnection::singlePreparedTransaction()
+{
+
+    int32_t one = htonl(1);
+    int32_t two = htonl(2);
+    int32_t three = htonl(3);
+    int32_t four = htonl(4);
+
+    const char* param_values[4];
+    int param_lengths[4];
+    int param_formats[4];
+
+    param_values[0] = reinterpret_cast<char*>(&one);
+    param_values[1] = reinterpret_cast<char*>(&two);
+    param_values[2] = reinterpret_cast<char*>(&three);
+    param_values[3] = reinterpret_cast<char*>(&four);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        param_lengths[i] = sizeof(int32_t);
+        param_formats[i] = 1;
+    }
+
+    auto result = Result(PQexecPrepared(_pgconn.get(),
+                                      "run_pre",
+                                      4,
+                                      param_values,
+                                      param_lengths,
+                                      param_formats,
+                                      1));
+
+    auto status = PQresultStatus(result.get());
+    if (PGRES_TUPLES_OK == status)
+    {
+        //get result
+        if (PQntuples(result.get()) > 0 && PQnfields(result.get()) > 0)
+        {
+            // Get pointer to binary data
+            const char* value = PQgetvalue(result.get(), 0, 0);
+            int len = PQgetlength(result.get(), 0, 0);
+
+            if (len == sizeof(int32_t))
+            {
+                int32_t network_value;
+                memcpy(&network_value, value, sizeof(int32_t));
+
+                const int32_t host_value = ntohl(network_value);
+                std::cout << "Result: " << host_value << "\n";
+            }
+        }
+    }
+    else
+    {
+        std::cerr << "single transaction failed:\n" << PQerrorMessage(_pgconn.get()) << "\n";
+    }
+}
+
 ExecStatusType PGconnection::getStatus(Result& result, PGconn* conn, ExecStatusType& status)
 {
     result = Result(PQgetResult(conn));

@@ -65,6 +65,7 @@ public:
     void simpleReadTransaction(const std::string& statement);
     void repeatTransaction(const std::string& statement, const int repeat);
     void singleTransaction();
+    void singlePreparedTransaction();
 
 private:
     Connection _pgconn;
