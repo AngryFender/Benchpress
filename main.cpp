@@ -42,7 +42,8 @@ int main(int argc, char* argv[])
                 // connection_store[thread_no].simpleReadTransaction("SELECT COUNT(*) FROM public.test;");
                 // connection_store[thread_no].repeatTransaction("SELECT COUNT(*) FROM public.test;", 2);
                 // connection_store[thread_no].repeatTransaction("SELECT NOW()", pipeline_no);
-                connection_store[thread_no].singleTransaction();
+                // connection_store[thread_no].singleTransaction();
+																connection_store[thread_no].singlePreparedTransaction();
 //                pqxx::work txn(connection_collection[thread_no]);
 //                 txn.exec("INSERT INTO public.test values (DEFAULT, 'abc')");
 //                 txn.exec("SELECT 1;");
