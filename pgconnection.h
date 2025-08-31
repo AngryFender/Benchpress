@@ -43,20 +43,20 @@ public:
         }
     }
 
-    PGconnection(const PGconnection&& connection) noexcept
+    PGconnection(PGconnection&& connection) noexcept
     {
         if(this != &connection)
         {
-            this->_pgconn = std::move(_pgconn);
+            this->_pgconn = std::move(connection._pgconn);
         }
     }
     PGconnection(const PGconnection& connection) = delete;
     PGconnection& operator=(const PGconnection&) = delete;
-    PGconnection& operator=(const PGconnection&& connection)
+    PGconnection& operator=( PGconnection&& connection)
     {
         if(this != &connection)
         {
-            this->_pgconn = std::move(_pgconn);
+            this->_pgconn = std::move(connection._pgconn);
         }
         return *this;
     };

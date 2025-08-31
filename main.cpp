@@ -20,7 +20,8 @@ int main(int argc, char* argv[])
     connection_store.reserve(max_thread);
     for (int j = 0; j < max_thread; ++j)
     {
-        connection_store.emplace_back("host=localhost port=5432 dbname=postgres user=postgres password=postgres");
+        PGconnection con("host=localhost port=5432 dbname=postgres user=postgres password=postgres");
+        connection_store.push_back(con);
     }
 
     std::vector<pqxx::connection> connection_collection;
@@ -42,8 +43,8 @@ int main(int argc, char* argv[])
                 // connection_store[thread_no].simpleReadTransaction("SELECT COUNT(*) FROM public.test;");
                 // connection_store[thread_no].repeatTransaction("SELECT COUNT(*) FROM public.test;", 2);
                 // connection_store[thread_no].repeatTransaction("SELECT NOW()", pipeline_no);
-                // connection_store[thread_no].singleTransaction();
-																connection_store[thread_no].singlePreparedTransaction();
+                connection_store[thread_no].singleTransaction();
+                connection_store[thread_no].singlePreparedTransaction();
 //                pqxx::work txn(connection_collection[thread_no]);
 //                 txn.exec("INSERT INTO public.test values (DEFAULT, 'abc')");
 //                 txn.exec("SELECT 1;");
