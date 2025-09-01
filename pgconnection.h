@@ -63,9 +63,10 @@ public:
 
     void simpleWriteTransaction(const std::string& statement);
     void simpleReadTransaction(const std::string& statement);
+    void setPreparedStated(const std::string& name, const std::string& statement, const int no_params)
     void repeatTransaction(const std::string& statement, const int repeat);
     void singleTransaction();
-    void singlePreparedTransaction();
+    void singlePreparedTransaction(const std::string& name);
 
 private:
     Connection _pgconn;

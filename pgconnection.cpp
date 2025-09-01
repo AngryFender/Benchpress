@@ -49,6 +49,11 @@ void PGconnection::simpleReadTransaction(const std::string& statement)
     }
 }
 
+void PGconnection::setPreparedStated(const std::string& name, const std::string& statement, const int no_params)
+{
+    PQprepare(_pgconn.get(), name.c_str(),statement.c_str(),no_params, nullptr);
+}
+
 void PGconnection::repeatTransaction(const std::string& statement, const int repeat)
 {
     try
@@ -175,7 +180,7 @@ void PGconnection::singleTransaction()
     }
 }
 
-void PGconnection::singlePreparedTransaction()
+void PGconnection::singlePreparedTransaction(const std::string& name)
 {
 
     int32_t one = htonl(1);
@@ -199,7 +204,7 @@ void PGconnection::singlePreparedTransaction()
     }
 
     auto result = Result(PQexecPrepared(_pgconn.get(),
-                                      "run_pre",
+                                      statement.c_str(),
                                       4,
                                       param_values,
                                       param_lengths,
