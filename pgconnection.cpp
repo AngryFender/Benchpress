@@ -204,7 +204,7 @@ void PGconnection::singlePreparedTransaction(const std::string& name)
     }
 
     auto result = Result(PQexecPrepared(_pgconn.get(),
-                                      statement.c_str(),
+                                      name.c_str(),
                                       4,
                                       param_values,
                                       param_lengths,
