@@ -3,6 +3,8 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <atomic>
+#include <vector>
 #include "libpq-fe.h"
 
 template <typename T, void (*func)(T*)>
@@ -23,7 +25,7 @@ using Result = std::unique_ptr<PGresult, PGdeleter<PGresult, PQclear>>;
 class PGconnection
 {
 public:
-    PGconnection(const std::string& dbname): _pgconn(Connection(PQconnectdb(dbname.c_str())))
+    explicit PGconnection(const std::string& dbname): _pgconn(Connection(PQconnectdb(dbname.c_str())))
     {
         if (CONNECTION_OK != PQstatus(_pgconn.get()))
         {
@@ -61,16 +63,18 @@ public:
         return *this;
     };
 
+    void prepareStatement(const std::string& name, const std::string& statement);
+
+    void test(std::vector<std::atomic_int>& instrument_counter, std::vector<int>& instrument_limiter);
+    void testPipeline(std::vector<std::atomic_int> &instrument_counter, std::vector<int> &instrument_limiter, int i);
+
     void simpleWriteTransaction(const std::string& statement);
     void simpleReadTransaction(const std::string& statement);
-    void setPreparedStated(const std::string& name, const std::string& statement, const int no_params);
     void repeatTransaction(const std::string& statement, const int repeat);
-    void singleTransaction();
-    void singlePreparedTransaction(const std::string& name);
 
 private:
     Connection _pgconn;
-    inline static ExecStatusType getStatus(Result& result, PGconn* conn, ExecStatusType& status);
+    static ExecStatusType getStatus(Result& result, PGconn* conn, ExecStatusType& status);
 };
 
 

@@ -15,7 +15,8 @@ MESSAGE(STATUS "Imported targets ➜ ${imported_targets}")
 add_executable(Benchpress main.cpp
         pgconnection.cpp
         pgconnection.h
-        utility.h)
+        utility.h
+        convert.h)
 
 target_link_libraries(Benchpress
         PRIVATE
